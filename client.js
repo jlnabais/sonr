@@ -10,9 +10,26 @@
 
 	var counter = document.getElementById('counter');
 
-	var allMarkers = document.getElementById('allMarkers');
-	var ALL_MARKERS = allMarkers.checked;
-	allMarkers.onchange = function() { ALL_MARKERS = this.checked; }
+	var allMarkersElem = document.getElementById('allMarkers');
+	var ALL_MARKERS = allMarkersElem.checked;
+	allMarkersElem.onchange = function() { ALL_MARKERS = this.checked; }
+
+	var applyOffsetElem = document.getElementById('applyOffset');
+	var IS_APPLY_OFFSET = applyOffsetElem.checked;
+	applyOffsetElem.onchange = function() { IS_APPLY_OFFSET = this.checked; }
+
+	var coffee = {lng: -9.178360998630525, lat: 38.70172887394747};
+	var brpl = {lng: -9.178474992513658, lat: 38.70181260297325};
+	var nabais = {lng: -9.178504496812822, lat: 38.70179690378836};
+	var offset = {lng: nabais.lng - brpl.lng, lat: nabais.lat - brpl.lat};
+	function applyOffset(latlng) {
+		if (!latlng) { return; }
+
+		return {
+			lat: latlng.lat - (IS_APPLY_OFFSET ? offset.lat : 0),
+			lng: latlng.lng - (IS_APPLY_OFFSET ? offset.lng : 0)
+		}
+	}
 
 	var R = 1;
 	var APs = [
@@ -65,21 +82,24 @@
 
 	var G = gaussian(0, 0.00006);
 
-	function genIcon(color) {
+	function genIcon(color, url) {
 		return L.icon({
-			iconUrl: MARKER_TEMPLATE.replace('{TPL}', color),
-			iconSize: [25, 41],
-			iconAnchor: [12, 40],
-			popupAnchor: [0, -30]
+			iconUrl: url || MARKER_TEMPLATE.replace('{TPL}', color),
+			iconSize: url ? [40, 40] : [25, 41],
+			iconAnchor: url ? [20, 40] : [12, 40],
+			popupAnchor: url ? [0, -30] : [0, -30]
 		});
 	}
 
 	var KNOW_DEVICES = {
-		'c0:ee:fb:59:7c:4a': genIcon('green'),
-		'cc:fa:00:c5:fb:ff': genIcon('red')
+		// 'c0:ee:fb:59:7c:4a': [genIcon('green'), 'nabais'],
+		'cc:fa:00:c5:fb:ff': [genIcon('red'), 'tavares'],
+		// 'b8:6b:23:de:eb:8e': [genIcon('magenta'), 'PC tavares'],
+		// 'c0:ee:fb:24:3b:c6': [genIcon('yellow'), 'vitó'],
+		// 'e8:50:8b:d9:62:f0': [genIcon('cyan'), 'ze pedro']
 	}
 
-	var iconBlue = genIcon('blue');
+	var iconBlue = [genIcon('blue'), 'cenas'];
 
 	function ajax(o) {
 		var xhr = new XMLHttpRequest();
@@ -87,6 +107,8 @@
 		if (o.withCredentials) { xhr.withCredentials = true; }
 
 		xhr.open(o.method || 'GET', o.url, true);
+
+		// xhr.timeout = o.timeout || 60 * 1000;
 
 		var cbInner = function() {
 			if (xhr.readyState === 4 && xhr.status > 199 && xhr.status < 300) {
@@ -98,20 +120,20 @@
 
 		xhr.onload  = cbInner;
 		xhr.onerror = cbInner;
+		xhr.ontimeout = cbInner;
 
 		xhr.send(o.body || null);
 	}
 
 	var ajaxObject = {
 		url: SERVER,
+		timeout: REFRESH_INTERVAL / 10,
 		cb: function(err, o) {
 			if (err) {
 				setTimeout(ajax.bind(null, ajaxObject), REFRESH_INTERVAL);
 
 				return console.error(err);
 			}
-
-			console.log(o);
 
 			markers.clearLayers();
 			heat.setLatLngs([]);
@@ -121,28 +143,40 @@
 			for (var clientMac in o) {
 				if (!o.hasOwnProperty(clientMac)) { continue; }
 
-				var dev = o[clientMac];
+				var clientAPsinfo = o[clientMac];
 
-				var latlng = dev.location;
+				for (var apMac in clientAPsinfo.aps) {
+					if (!clientAPsinfo.aps.hasOwnProperty(apMac)) { continue; }
 
-				if (!latlng) { continue; }
+					var clientAPinfo = clientAPsinfo.aps[apMac];
 
-				count++;
+					var latlng = applyOffset(clientAPinfo.location);
 
-				heat.addLatLng(L.latLng(latlng.lat, latlng.lng));
+					if (!latlng) { continue; }
 
-				// dev.location.lat += G();
-				// dev.location.lng += G();
+					count++;
 
-				var iconColor = KNOW_DEVICES[clientMac] || ALL_MARKERS && iconBlue;
+					heat.addLatLng([latlng.lat, latlng.lng]);
 
-				if (!iconColor) { continue; }
+					// dev.location.lat += G();
+					// dev.location.lng += G();
 
-				var marker = L.marker([latlng.lat, latlng.lng], {
-						icon: iconColor
-					})
-					.bindPopup(clientMac + ' - ' + dev.manufacturer);
-				markers.addLayer(marker);
+					var iconColor = clientAPsinfo.userData && clientAPsinfo.userData.avatar && [genIcon(null, clientAPsinfo.userData.avatar), clientAPsinfo.userData.username] ||
+						KNOW_DEVICES[clientMac] ||
+						ALL_MARKERS && iconBlue;
+
+					if (!iconColor) { continue; }
+
+					if (new Date - clientAPinfo.lastUpdated > 1 * 60 * 1000) { console.log('skip ap', iconColor[1], apMac); continue; }
+
+					console.log(iconColor[1], apMac, [latlng.lat, latlng.lng]);
+
+					var marker = L.marker([latlng.lat, latlng.lng], {
+							icon: iconColor[0]
+						})
+						.bindPopup(clientMac + ' - ' + iconColor[1] + ' (' + apMac + ')');
+					markers.addLayer(marker);
+				}
 			}
 
 			counter.innerHTML = count;
@@ -159,6 +193,9 @@
 
 	var map = L.map('map').setView([X, Y], Z);
 	map.doubleClickZoom.disable();
+	map.on('click', function(ev) {
+		console.log('click', [ev.latlng.lng, ev.latlng.lat]);
+	});
 
 	var markers = new L.FeatureGroup();
 	map.addLayer(markers);
@@ -177,5 +214,5 @@
 	});
 	plant.addTo(map);
 
-	var heat = L.heatLayer([], {radius: 50}).addTo(map);
+	var heat = L.heatLayer([], {radius: 25}).addTo(map);
 })();
