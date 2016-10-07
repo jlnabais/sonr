@@ -1,20 +1,26 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset="utf-8">
-    <meta name="robots" content="noindex">
-    <meta name="viewport" content="width=device-width">
+	<meta charset="utf-8">
+	<meta name="robots" content="noindex">
+	<meta name="viewport" content="width=device-width">
 
-    <title>SONR</title>
+	<title>SONR</title>
 
-    <link rel="stylesheet" href="vendor/leaflet.css" />
-    <link rel="stylesheet" href="client.css">
+	<link rel="stylesheet" href="vendor/leaflet.css" />
+	<link rel="stylesheet" href="client.css">
   </head>
   <body>
-    <script type="text/javascript" src="vendor/leaflet.js"></script>
-    <script type="text/javascript" src="vendor/Leaflet.ImageOverlay.Rotated.js"></script>
-    <script type="text/javascript" src="client.js"></script>
+	<script type="text/javascript" src="vendor/leaflet.js"></script>
+	<script type="text/javascript" src="vendor/leaflet-heat.js"></script>
+	<script type="text/javascript" src="vendor/Leaflet.ImageOverlay.Rotated.js"></script>
 
-    <div id="map"></div>
+	<div id="map">
+		<label><input type="checkbox" id="allMarkers" value="allMarkers"> All markers</label>
+
+		<span id="counterWrap">Total devices: <span id="counter">0</span></span>
+	</div>
+
+	<script type="text/javascript" src="client.js"></script>
   </body>
 </html>

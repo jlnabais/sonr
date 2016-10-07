@@ -5,3 +5,16 @@
   top: 0;
   bottom: 0;
 }
+
+label {
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	z-index: 500;
+}
+
+#counterWrap {
+	position: absolute;
+	right: 1%;
+	top: 0;
+}
