@@ -1,0 +1,32 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {}
+    },
+    "installed_plugins": {
+        "com-badrit-macaddress": {
+            "PACKAGE_NAME": "io.cordova.hellocordova"
+        },
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "io.cordova.hellocordova"
+        }
+    },
+    "dependent_plugins": {},
+    "modules": [
+        {
+            "file": "plugins/com-badrit-macaddress/www/MacAddress.js",
+            "id": "com-badrit-macaddress.MacAddress",
+            "pluginId": "com-badrit-macaddress",
+            "clobbers": [
+                "window.MacAddress"
+            ]
+        }
+    ],
+    "plugin_metadata": {
+        "com-badrit-macaddress": "0.2.0",
+        "cordova-plugin-whitelist": "1.3.0"
+    }
+}

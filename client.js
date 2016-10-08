@@ -1,4 +1,40 @@
-(function() {
+var app = {
+    // Application Constructor
+    initialize: function() {
+        this.bindEvents();
+    },
+    // 'load', 'deviceready', 'offline', and 'online'.
+    bindEvents: function() {
+        document.addEventListener('deviceready', this.onDeviceReady, false);
+    },
+    onDeviceReady: function() {
+        app.receivedEvent('deviceready');
+        window.MacAddress.getMacAddress(
+          function(macAddress) {
+            go(macAddress);
+          },
+          function(fail) {
+            alert(fail);
+          }
+        );
+    },
+    // Update DOM on a Received Event
+    receivedEvent: function(id) {
+        var parentElement = document.getElementById(id);
+        var listeningElement = parentElement.querySelector('.listening');
+        var receivedElement = parentElement.querySelector('.received');
+
+        listeningElement.setAttribute('style', 'display:none;');
+        receivedElement.setAttribute('style', 'display:block;');
+
+        console.log('Received Event: ' + id);
+    }
+};
+
+app.initialize();
+
+
+function go(macAddress) {
 	'use strict';
 
 	var SERVER = 'http://acor.sl.pt:6699/fetch';
@@ -133,7 +169,8 @@
 			if (err) {
 				setTimeout(ajax.bind(null, ajaxObject), REFRESH_INTERVAL);
 
-				return console.error(err);
+				//return console.error(err);
+        return alert(err.toString());
 			}
 
 			markers.clearLayers();
@@ -225,4 +262,8 @@
 	plant.addTo(map);
 
 	var heat = L.heatLayer([], {radius: 25}).addTo(map);
-})();
+}
+
+window.onerror = function(err) {
+  alert(err.toString());
+}

@@ -1,0 +1,7 @@
+install android studio
+install https://cordova.apache.org/
+  install browser and android platforms (using the tutorial)
+  install most of the packages for latest 3 versions of android?!
+
+
+cordoba create...

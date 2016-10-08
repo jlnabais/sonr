@@ -1,0 +1,31 @@
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29.93 29.93">
+  <defs>
+    <style type="text/css">
+      <![CDATA[
+        svg g#main g {
+          display: none;
+        }
+        svg g#main g:target,
+        svg g#main g:target g {
+          display: inherit;
+        }
+      ]]>
+    </style>
+  </defs>
+  <g id="main">
+    <g id="white">
+      <g>
+        <title>x</title>
+        <rect fill="#fff" class="cls-1" x="5.33" y="24.33" width="40.67" height="1.67" transform="translate(14.61 -20.98) rotate(45)"/>
+        <rect fill="#fff" class="cls-1" x="5.33" y="24.33" width="40.67" height="1.67" transform="translate(-20.98 15.32) rotate(-45)"/>
+      </g>
+    </g>
+    <g id="gray">
+      <g>
+        <title>x</title>
+        <rect fill="#9b9b9b" class="cls-1" x="5.33" y="24.33" width="40.67" height="1.67" transform="translate(14.61 -20.98) rotate(45)"/>
+        <rect fill="#9b9b9b" class="cls-1" x="5.33" y="24.33" width="40.67" height="1.67" transform="translate(-20.98 15.32) rotate(-45)"/>
+      </g>
+    </g>
+  </g>
+</svg>
