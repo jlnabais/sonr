@@ -27,7 +27,8 @@
 
 		return {
 			lat: latlng.lat - (IS_APPLY_OFFSET ? offset.lat : 0),
-			lng: latlng.lng - (IS_APPLY_OFFSET ? offset.lng : 0)
+			lng: latlng.lng - (IS_APPLY_OFFSET ? offset.lng : 0),
+			unc: latlng.unc
 		}
 	}
 
@@ -145,6 +146,10 @@
 
 				var clientAPsinfo = o[clientMac];
 
+				var lat = 0;
+				var lng = 0;
+				var minUnc = Number.MAX_VALUE;
+
 				for (var apMac in clientAPsinfo.aps) {
 					if (!clientAPsinfo.aps.hasOwnProperty(apMac)) { continue; }
 
@@ -152,31 +157,36 @@
 
 					var latlng = applyOffset(clientAPinfo.location);
 
-					if (!latlng) { continue; }
+					if (!latlng || latlng.unc >= minUnc) { continue; }
 
-					count++;
+					minUnc = latlng.unc;
 
-					heat.addLatLng([latlng.lat, latlng.lng]);
-
-					// dev.location.lat += G();
-					// dev.location.lng += G();
-
-					var iconColor = clientAPsinfo.userData && clientAPsinfo.userData.avatar && [genIcon(null, clientAPsinfo.userData.avatar), clientAPsinfo.userData.username] ||
-						KNOW_DEVICES[clientMac] ||
-						ALL_MARKERS && iconBlue;
-
-					if (!iconColor) { continue; }
-
-					if (new Date - clientAPinfo.lastUpdated > 1 * 60 * 1000) { console.log('skip ap', iconColor[1], apMac); continue; }
-
-					console.log(iconColor[1], apMac, [latlng.lat, latlng.lng]);
-
-					var marker = L.marker([latlng.lat, latlng.lng], {
-							icon: iconColor[0]
-						})
-						.bindPopup(clientMac + ' - ' + iconColor[1] + ' (' + apMac + ')');
-					markers.addLayer(marker);
+					lat = latlng.lat;
+					lng = latlng.lng;
 				}
+
+				if (!lat && !lng) { continue; }
+
+				count++;
+
+				heat.addLatLng(L.latLng(lat, lng));
+
+				// dev.location.lat += G();
+				// dev.location.lng += G();
+
+				var iconColor = clientAPsinfo.userData && clientAPsinfo.userData.avatar && [genIcon(null, clientAPsinfo.userData.avatar), clientAPsinfo.userData.username] ||
+					KNOW_DEVICES[clientMac] ||
+					ALL_MARKERS && iconBlue;
+
+				if (!iconColor) { continue; }
+
+				console.log(iconColor[1], apMac, [lat, lng, minUnc, new Date(new Date - clientAPsinfo.lastUpdated)]);
+
+				var marker = L.marker([lat, lng], {
+						icon: iconColor[0]
+					})
+					.bindPopup(clientMac + ' - ' + iconColor[1] + ' (' + minUnc + ')');
+				markers.addLayer(marker);
 			}
 
 			counter.innerHTML = count;
